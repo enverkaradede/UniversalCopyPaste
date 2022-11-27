@@ -2,29 +2,53 @@ from pynput import keyboard
 
 class Keyboard:
     def __init__(self):
-        self.key = None
+        self._key = None
 
-    def SetKey(self, key):
-        self.key = key
+    def setKey(self, key):
+        self._key = key
 
-    def GetKey(self):
-        return self.key
+    def getKey(self):
+        return self._key
 
-    def __on_activate(self):
+    def __onActivate(self):
         # TODO: Add send content copied functionality
-        print("Add copy function")
+        import clipboard
+        cp = clipboard.Clipboard()
 
-    def __on_exit(self):
+        print(cp.checkIfTextOrImage())
+        msg = cp.copyTextOrImage()
+        cp.setCopiedData(msg)
+        print(f'COPIED DATA --> {cp.getCopiedData()}')
+        cp.setWaitTime(5)
+        # msg = cp.PasteText()
+        # print(f'COPIED DATA --> {msg}')
+        # msg = cp.CopyImage()
+        # print(f'COPIED DATA --> {msg}')
+
+        import sender
+
+        s = sender.TCPSender()
+        s.setHost('127.0.0.1')
+        s.setPort(12345)
+        s.connectSocket()
+        s.setData(msg)
+        s.sendCopiedTextToDevice()
+        s.receiveResponse()
+        s.closeSocket()
+
+        # print("Add copy function")
+
+    def __onExit(self):
         print('Exit combination is detected. Exiting from key logger.')
         exit(1)
 
     def listen(self):
         with keyboard.GlobalHotKeys({
-            '<ctrl>+<alt>+c': self.__on_activate,
-            '<ctrl>+<alt>+x': self.__on_exit}) as listener:
+            '<ctrl>+<alt>+c': self.__onActivate,
+            '<ctrl>+<alt>+x': self.__onExit}) as listener:
             listener.join()
 
-    def __GetKeycode(self):
+    def __getKeycode(self):
         switcher = {
             "ctrl": keyboard.Key.ctrl,
             "ctrl_l": keyboard.Key.ctrl_l,
@@ -52,7 +76,7 @@ class Keyboard:
             "right": keyboard.Key.right,
         }
 
-        return switcher.get(self.key, self.key)
+        return switcher.get(self._key, self._key)
 
     def TestKey(self):
-        return self.__GetKeycode()
+        return self.__getKeycode()
